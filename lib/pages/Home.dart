@@ -20,19 +20,22 @@ import 'package:progress_state_button/iconed_button.dart';
 import '../utils/constants.dart';
 import 'package:progress_state_button/progress_button.dart';
 import 'package:aad_oauth/aad_oauth.dart';
-
 final navigatorKey = GlobalKey<NavigatorState>();
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
-
   @override
-  State<Home> createState() => _HomeState();
-
+  _HomePageState createState() => _HomePageState();
 }
 
-
-class _HomeState extends State<Home> {
-
+class _HomePageState extends State<Home> {
+  // Initial state with a Text widget
+  Widget _currentWidget = SlideInUp(
+      duration: Duration(milliseconds: 500),
+      child: Center( child: Icon(
+        MyFlutterApp.easy_icon,
+        shadows: <Shadow>[Shadow(color: Colors.black26, blurRadius: 10.0)],
+        size: 180,
+      )));
+  List<Ora> _schedule = [];
   List<String> profs = [],studs = [];
   bool logged = true;
   late List<Ora> oreList;
@@ -45,88 +48,73 @@ class _HomeState extends State<Home> {
     loader: SizedBox(),
   );
   final AadOAuth oauth = AadOAuth(config);
-  @override
-  Widget build(BuildContext context) {
 
+  Future<void> _fetchData() async {
 
-    w = MediaQuery.of(context).size.width;
-    h = MediaQuery.of(context).size.height;
-    hasCachedAccountInformation();
-    return FutureBuilder(
-        future:  Future.wait([login(true),fetchData(), fetchProfs("https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=studs"),
-        fetchProfs("https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=profs")]),
-        builder:
-        (context, AsyncSnapshot<List<dynamic>> snapshot){
+    try{
+      await login(true);
+    }catch(error){
+      print('errore auth');
+    }
+    // Fetch professors data
+    try {
+      profs = await fetchProfs('https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=profs');
+    } catch (error) {
+      print('Error fetching professors: $error');
+      profs = [];
+    }
 
-          if(snapshot.hasData && snapshot.data![0].toString() == "true"){
-            print("loggato :" + snapshot.data![0].toString());
-            return NavBar2(snapshot.data![1], snapshot.data![2] , snapshot.data![3], context);
-          }else if(snapshot.hasData && snapshot.data![0].toString() == "false"){
-            return Material(
-                type: MaterialType.transparency,
-                child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.security,
-                          size: 100.0,
-                          color: Colors.blue,
-                        ),
-                        SizedBox(height: 40.0),
-                        Text(
-                          'Abbiamo bisogno di autenticarti con l\'account della scuola per garantire la privacy di ogni utente, grazie.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 26,
-                            fontFamily: 'HindSiliguri',
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                        SizedBox(height: 40.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Aggiungi qui la logica per gestire il clic sul pulsante "Accedi"
-                            login(true);
-                          },
-                          child: Text(
-                            'Accedi',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontFamily: 'HindSiliguri',
-                              fontWeight: FontWeight.normal,
-                            ),),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                          ),
-                        ),
-                      ],
-                    )));
-          } else if (snapshot.hasError) {
-            return Text(snapshot.error.toString()); // display error
-          }
-          else{
-            return SlideInUp(
-                duration: Duration(milliseconds: 500),
-                child: Center( child: Icon(
-              MyFlutterApp.easy_icon,
-              shadows: <Shadow>[Shadow(color: Colors.black26, blurRadius: 10.0)],
-              size: 180,
-            )));
-          }
-        });
+    try {
+      studs = await fetchProfs('https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=studs');
+    } catch (error) {
+      print('Error fetching professors: $error');
+      studs = [];
+    }
+
+    // Fetch schedule data
+    try {
+      _schedule = await fetchData();
+    } catch (error) {
+      print('Error fetching schedule: $error');
+      _schedule = [];
+    }
+
+    // Update the displayed widget based on data availability
+    if (profs.isNotEmpty && studs.isNotEmpty && _schedule.isNotEmpty) {
+      setState(() {
+        _currentWidget = NavBar2(_schedule, studs, profs, context);
+      });
+    }else{
+      await fetchData();
+    }
   }
 
+  @override
+  void initState() {
+    super.initState();
+
+    hasCachedAccountInformation();
+    _fetchData(); // Fetch data on page initialization
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
+    return Scaffold(
+      body: Center(
+        child: _currentWidget,
+      ),
+    );
+  }
 
   Future<StatefulWidget> hasCachedAccountInformation() async {
     var hasCachedAccountInformation = await oauth.hasCachedAccountInformation;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     logged = hasCachedAccountInformation;
     return logged ? FutureBuilder(
-        future:  Future.wait([fetchData(), fetchProfs("http://127.0.0.1:5001/easy-lesson/us-central1/getListe?lista=studs"),
-          fetchProfs("http://127.0.0.1:5001/easy-lesson/us-central1/getListe?lista=profs")]),
+        future:  Future.wait([fetchData(), fetchProfs("https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=studs"),
+          fetchProfs("https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=profs")]),
         builder:
             (context, AsyncSnapshot<List<dynamic>> snapshot){
 
@@ -212,22 +200,22 @@ class _HomeState extends State<Home> {
     return data;
   }
 
+  Future<bool> login(bool redirect) async{
+    config.webUseRedirect = redirect;
+    final result = await oauth.login();
 
+    print(result.toString());
+    var accessToken = await oauth.getAccessToken();
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    initFirebase();
+    if (accessToken != null) {
 
+      print("lgin :" + accessToken);
+      return true;
+    }else{
+      print("not logged");
+      return false;
+    }
   }
-
-  void initFirebase() async{
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  }
-
 
   Future<List<Ora>> fetchData() async {
     try {
@@ -246,23 +234,5 @@ class _HomeState extends State<Home> {
       return [];
     }
   }
-
-  Future<bool> login(bool redirect) async{
-    config.webUseRedirect = redirect;
-    final result = await oauth.login();
-
-    print(result.toString());
-    var accessToken = await oauth.getAccessToken();
-
-    if (accessToken != null) {
-
-      print("lgin :" + accessToken);
-      return true;
-    }else{
-      print("not logged");
-      return false;
-    }
-  }
-
 
 }

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:Easy_Lesson_web/pages/Home.dart';
 import 'package:flutter/material.dart';
 import 'package:Easy_Lesson_web/pages/Home.dart';
 import 'package:Easy_Lesson_web/utils/colors.dart';

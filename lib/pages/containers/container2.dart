@@ -963,13 +963,14 @@ return Container(
   }
 
   void getOrario(String target, bool prof, int ore) async{
+    print("cerco orario\n");
     if(prof){
       http.Response response = await http.get(Uri.parse("https://us-central1-easy-lesson.cloudfunctions.net/getOrario?prof=$target&ore=$ore"), headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*',
       });
      String res = response.body.toString().replaceAll(r'\"', '"');
-      print("risultato chiamata: \n" + res);
+
 
 
       Map<String, dynamic> jsonData = jsonDecode(res.substring(1, res.length - 1));
