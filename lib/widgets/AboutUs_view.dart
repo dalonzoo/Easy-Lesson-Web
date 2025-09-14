@@ -72,7 +72,7 @@ class _AboutUs_viewState extends State<AboutUs_view> {
             //name
             SelectableText(
               Values.name,
-              style: Theme.of(context).textTheme.headline6!.copyWith(
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 fontWeight: FontWeight.w700,
               ),
               textAlign: TextAlign.center,
@@ -82,7 +82,7 @@ class _AboutUs_viewState extends State<AboutUs_view> {
               padding: const EdgeInsets.only(bottom: 20.0),
               child: SelectableText(
                 Values.description,
-                style: Theme.of(context).textTheme.subtitle2,
+                style: Theme.of(context).textTheme.titleSmall,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -97,7 +97,6 @@ class _AboutUs_viewState extends State<AboutUs_view> {
                     decorationStyle: TextDecorationStyle.solid,
                   ),
                 ),
-                onTap: () => AboutUs_view._launchURL('https://alisolanki.com'),
               ),
             ),],
         ),

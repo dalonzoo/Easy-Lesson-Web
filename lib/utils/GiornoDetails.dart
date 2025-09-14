@@ -56,33 +56,41 @@ class GiornoDetails {
   });
 
   factory GiornoDetails.fromJson(Map<String, dynamic> json) {
+    int _asInt(dynamic v) => (v is int)
+        ? v
+        : int.tryParse(v?.toString() ?? '0') ?? 0;
+
+    List<dynamic> _asList(dynamic v) => (v is List)
+        ? v.cast<dynamic>()
+        : <dynamic>[];
+
     return GiornoDetails(
-      ora1: json['ora1'],
-      ora2: json['ora2'],
-      ora3: json['ora3'],
-      ora4: json['ora4'],
-      ora5: json['ora5'],
-      ora6: json['ora6'],
-      ora7: json['ora7'],
-      ora8: json['ora8'],
-      ora9: json['ora9'],
-      ora10: json['ora10'],
-      oreGiorno: json['oreGiorno'],
-      nOre: json['nOre'],
-      nOreProf: json['nOreProf'],
-      laboratorio: json['laboratorio'],
-      lab1: json['lab1'],
-      lab2: json['lab2'],
-      lab3: json['lab3'],
-      lab4: json['lab4'],
-      lab5: json['lab5'],
-      lab6: json['lab6'],
-      lab7: json['lab7'],
-      lab8: json['lab8'],
-      lab9: json['lab9'],
-      lab10: json['lab10'],
-      lezioni: json['lezioni'],
-      sostegno: json['sostegno']
+      ora1: json['ora1']?.toString() ?? '',
+      ora2: json['ora2']?.toString() ?? '',
+      ora3: json['ora3']?.toString() ?? '',
+      ora4: json['ora4']?.toString() ?? '',
+      ora5: json['ora5']?.toString() ?? '',
+      ora6: json['ora6']?.toString() ?? '',
+      ora7: json['ora7']?.toString() ?? '',
+      ora8: json['ora8']?.toString() ?? '',
+      ora9: json['ora9']?.toString() ?? '',
+      ora10: json['ora10']?.toString() ?? '',
+      oreGiorno: json['oreGiorno']?.toString() ?? '0',
+      nOre: _asInt(json['nOre']),
+      nOreProf: _asInt(json['nOreProf']),
+      laboratorio: json['laboratorio']?.toString() ?? '',
+      lab1: json['lab1']?.toString() ?? '',
+      lab2: json['lab2']?.toString() ?? '',
+      lab3: json['lab3']?.toString() ?? '',
+      lab4: json['lab4']?.toString() ?? '',
+      lab5: json['lab5']?.toString() ?? '',
+      lab6: json['lab6']?.toString() ?? '',
+      lab7: json['lab7']?.toString() ?? '',
+      lab8: json['lab8']?.toString() ?? '',
+      lab9: json['lab9']?.toString() ?? '',
+      lab10: json['lab10']?.toString() ?? '',
+      lezioni: _asList(json['lezioni']),
+      sostegno: _asList(json['sostegno']),
     );
   }
 
@@ -90,7 +98,6 @@ class GiornoDetails {
     switch(num){
       case 0:
         return this.ora1;
-        break;
       case 1:
         return this.ora2;
       case 2:
@@ -111,7 +118,6 @@ class GiornoDetails {
         return this.ora10;
       default:
         return "";
-        break;
 
     }
 
@@ -122,7 +128,6 @@ class GiornoDetails {
     switch(num){
       case 0:
         return this.lab1;
-        break;
       case 1:
         return this.lab2;
       case 2:
@@ -143,7 +148,6 @@ class GiornoDetails {
         return this.lab10;
       default:
         return "";
-        break;
     }
   }
 

@@ -3,18 +3,17 @@ import 'dart:ui';
 import 'package:Easy_Lesson_web/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:Easy_Lesson_web/utils/GiornoDetails.dart';
 import 'package:Easy_Lesson_web/utils/Ora.dart';
-import 'package:Easy_Lesson_web/utils/OrarioSettimanale.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart' as carousel_slider;
+import 'package:flutter/material.dart' hide CarouselController;
 import 'package:Easy_Lesson_web/utils/my_flutter_app_icons.dart';
 class DayPage extends StatefulWidget {
 
   final String giorno;
   final GiornoDetails details;
   final bool prof;
-  final CarouselController controller;
+  final carousel_slider.CarouselSliderController controller;
   final ScrollController scrollController;
 
   final List<Ora>? listaOre;
@@ -42,13 +41,12 @@ class _DayPageState extends State<DayPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => {
-          setState(() {
-              widget.scrollController.jumpTo(widget.scrollController.position.minScrollExtent);
-          })
-
-    });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          widget.scrollController
+              .jumpTo(widget.scrollController.position.minScrollExtent);
+        });
+      });
 
   }
 
@@ -120,72 +118,54 @@ class _DayPageState extends State<DayPage> {
     widget.controller.jumpToPage(0);
   }
 
-  void _onSearchButtonPressedRight(){
-    widget.controller.nextPage();
-  }
-  Widget _getListViewWidget2() {
-    // We want the ListView to have the flexibility to expand to fill the
-    // available space in the vertical axis
-    return new Flexible(
-        child: ListView.builder(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(20.0),
-            itemCount: array.length,
-            itemBuilder: (BuildContext context, int index){
-              return Container(
-                height: 50,
-                margin: EdgeInsets.all(2),
-                color: Colors.white,
-                child: Center(
-                    child: Text('${array[index]} (${array[index]})',
-                      style: TextStyle(fontSize: 18, color: Colors.blue),
-                    )
-                ),
-              );
-            }
-        ));
-  }
+  // _onSearchButtonPressedRight e _getListViewWidget2 non utilizzati: rimossi
 
   Widget _getListViewWidget() {
     // We want the ListView to have the flexibility to expand to fill the
     // available space in the vertical axis
-    int nOre = 0;
-    if(widget.prof){
-      nOre = int.parse(widget.details.oreGiorno);
-    }else{
-      nOre = (widget.details.nOre);
-    }
+     int nOre = 0;
+  if (widget.prof) {
+    nOre = int.parse(widget.details.oreGiorno);
+  } else {
+    nOre = (widget.details.nOre);
+  }
 
-    return new SingleChildScrollView(
-        child :  ListView.builder(
-            physics: NoBouncingScrollPhysics(),
-          // The number of items to show
-            itemCount: nOre,
-            shrinkWrap: true,
-            // Callback that should return ListView children
-            // The index parameter = 0...(itemCount-1)
-            itemBuilder: (context, index) {
-              print("ora $index +  :" + widget.details!.sostegno[index]);
-              // Get the currency at this position
-              final String currency = widget.details.getOra(index);
+  return Expanded(
+    child: ListView.builder(
+      // The number of items to show
+      itemCount: nOre,
+      // Callback that should return ListView children
+      // The index parameter = 0...(itemCount-1)
+      itemBuilder: (context, index) {
+  // Log di debug sul sostegno per indice corrente (se presente)
+  // debugPrint("sostegno[$index]: ${sostSafe}");
+      final sostList = widget.details.sostegno;
+      final sostSafe = (index < sostList.length)
+        ? (sostList[index]?.toString() ?? "")
+        : "";
+        // Get the currency at this position
+        final String currency = widget.details.getOra(index);
 
-              // Get the icon color. Since x mod y, will always be less than y,
-              // this will be within bounds
-              final MaterialColor color = _colors[index % _colors.length];
+        // Get the icon color. Since x mod y, will always be less than y,
+        // this will be within bounds
+        final MaterialColor color = _colors[index % _colors.length];
 
-
-              int numero;
-              return
-                  GestureDetector(
-              child: Center(
-              child: _getListItemWidget(currency, color, index + 1,widget.details!.getLab(index) != "" ? widget.details!.getLab(index) : "",
-                  widget.details!.sostegno[index] != "" ? widget.details!.sostegno[index] : ""),
-              ),
-              );
-
-
-
-            }));
+        return GestureDetector(
+          child: Center(
+            child: _getListItemWidget(
+              currency,
+              color,
+              index + 1,
+        widget.details.getLab(index).isNotEmpty
+          ? widget.details.getLab(index)
+          : "",
+        sostSafe,
+            ),
+          ),
+        );
+      },
+    ),
+  );
   }
 
 
@@ -213,13 +193,10 @@ class _DayPageState extends State<DayPage> {
       det = new TextSpan(text: "", style:
       new TextStyle(color: Colors.black),);
     }
-    String percentChangeText = "ore ";
-    TextSpan percentChangeTextWidget;
+  // campi non utilizzati rimossi
 
 
-    // Currency price decreased. Color percent change text red
-    percentChangeTextWidget = new TextSpan(text:  "",
-      style: new TextStyle(color: Colors.black),);
+    // Nessun testo aggiuntivo
 
 
     return new RichText(text: new TextSpan(
@@ -256,6 +233,7 @@ class _DayPageState extends State<DayPage> {
   }
 
   ListTile _getListTile(String currency, MaterialColor color, int index, String lab,String sost) {
+    print("sostegno ricevuto:" + sost);
     List<String> sosts = sost.split(",");
     List<Widget> sostWidgets = [];
     for (String sostItem in sosts) {

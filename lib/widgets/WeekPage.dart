@@ -1,37 +1,33 @@
 
-import 'package:path_provider/path_provider.dart' as path_provider;
-import 'dart:convert';
 import 'dart:ui';
 import 'package:oktoast/oktoast.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+// unused imports rimossi
+import 'package:flutter/material.dart' hide CarouselController;
 import 'package:Easy_Lesson_web/utils/GiornoDetails.dart';
-import 'package:Easy_Lesson_web/utils/MeasureSizeRenderObject.dart';
+//
 import 'package:Easy_Lesson_web/utils/Ora.dart';
 import 'package:Easy_Lesson_web/utils/OrarioSettimanale.dart';
-import 'package:Easy_Lesson_web/utils/colors.dart';
-import 'package:Easy_Lesson_web/utils/constants.dart';
+//
 import 'package:Easy_Lesson_web/utils/my_flutter_app_icons.dart';
-import 'package:Easy_Lesson_web/utils/responsive_widget.dart';
+//
 import 'package:Easy_Lesson_web/widgets/DayPage.dart';
-import 'package:Easy_Lesson_web/widgets/ListPage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//
+// unused imports rimossi
 import 'package:hive/hive.dart';
 
-import 'package:Easy_Lesson_web/widgets/WeekPage.dart';
-import 'package:Easy_Lesson_web/widgets/gradient_button.dart';
+//
 
-import 'package:http/http.dart' as http;
-import 'package:loading_indicator/loading_indicator.dart';
+import 'package:carousel_slider/carousel_slider.dart' as carousel_slider;
+//
+// unused imports rimossi
 
 class WeekPage extends StatefulWidget {
 
   final String _name;
   final OrarioSettimanale orarioSettimanale;
   final bool prof;
-  final CarouselController controller;
+  final carousel_slider.CarouselSliderController  controller;
   final List<Ora>? listaOre;
   final ScrollController scrollController;
   final double customHeight;
@@ -53,7 +49,7 @@ class _WeekPageState extends State<WeekPage> {
   final List<String> array = ["Lunedi","Martedi","Mercoledi","Giovedi","Venerdi"];
   late String giorno = "";
   late GiornoDetails details;
-  late CarouselController carouselController;
+  late carousel_slider.CarouselSliderController carouselController;
   late IconData favIcon = Icons.favorite_border;
   late int oreTot = 0;
   late final box;
@@ -77,9 +73,9 @@ class _WeekPageState extends State<WeekPage> {
             Center(
                 child: Column(
                   children: [
-                    CarouselSlider(items: carouselItems,
+                    carousel_slider.CarouselSlider(items: carouselItems,
                       carouselController: carouselController,
-                      options:CarouselOptions(
+                      options:carousel_slider.CarouselOptions(
                         height: widget.customHeight,
                         viewportFraction: 1,
                         autoPlayCurve: Curves.fastOutSlowIn,
@@ -105,7 +101,7 @@ class _WeekPageState extends State<WeekPage> {
     super.initState();
 
 
-    carouselController = CarouselController();
+    carouselController = carousel_slider.CarouselSliderController();
 
     initStorage();
     details = widget.orarioSettimanale.giorni["giorno0"]!;
@@ -244,28 +240,7 @@ class _WeekPageState extends State<WeekPage> {
     }
   }
 
-  Widget _getListViewWidget2() {
-    // We want the ListView to have the flexibility to expand to fill the
-    // available space in the vertical axis
-    return new Flexible(
-        child: ListView.builder(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(20.0),
-            itemCount: array.length,
-            itemBuilder: (BuildContext context, int index){
-              return Container(
-                height: 50,
-                margin: EdgeInsets.all(2),
-                color: Colors.white,
-                child: Center(
-                    child: Text('${array[index]} (${array[index]})',
-                      style: TextStyle(fontSize: 18, color: Colors.blue),
-                    )
-                ),
-              );
-            }
-        ));
-  }
+  // _getListViewWidget2 non utilizzato: rimosso
 
   Widget _getListViewWidget() {
     // We want the ListView to have the flexibility to expand to fill the
@@ -302,9 +277,9 @@ class _WeekPageState extends State<WeekPage> {
   
   int getOre(bool prof, int index){
     if(prof){
-      return widget.orarioSettimanale.giorni["giorno$index"]!.nOreProf as int;
+  return widget.orarioSettimanale.giorni["giorno$index"]!.nOreProf;
     }else{
-      return widget.orarioSettimanale.giorni["giorno$index"]!.nOre as int;
+  return widget.orarioSettimanale.giorni["giorno$index"]!.nOre;
     }
   }
 
@@ -341,7 +316,6 @@ class _WeekPageState extends State<WeekPage> {
           details = widget.orarioSettimanale.giorni["giorno2"]!;
 
           giorno = array[index];
-          break;
           break;
         case 3:
           details = widget.orarioSettimanale.giorni["giorno3"]!;

@@ -1,12 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
-
+import 'package:flutter/material.dart' hide CarouselController;
+import 'package:carousel_slider/carousel_slider.dart' as carousel_slider;
 import 'package:Easy_Lesson_web/pages/Favourites.dart';
 import 'package:aad_oauth/model/config.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -31,6 +32,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io' show Platform;
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:aad_oauth/aad_oauth.dart';
+import 'package:dio/dio.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 class LoginScreen extends StatefulWidget {
@@ -56,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String giorno = "";
   List<Ora> oreList = [];
   final ScrollController scrollController = ScrollController();
-  late CarouselController buttonCarouselController;
+  late carousel_slider.CarouselSliderController buttonCarouselController;
 
   String selezionato = "";
 
@@ -64,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   late TextEditingController textEditingController1;
   late bool visible = false;
-  late OrarioSettimanale orario;
+  OrarioSettimanale? orario;
   ButtonState stateOnlyText = ButtonState.idle;
   Color progressColor = AppColors.whiteColor;
   late Size widgetSize;
@@ -97,15 +99,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
 
-    buttonCarouselController = CarouselController();
-    textEditingController1 = TextEditingController();
-    String jsonString = "{\"giorno0\":{\"ora1\":\"A041 Mucciolo con B016 Montuschi\",\"ora2\":\"A041 Mucciolo con B016 Montuschi\",\"ora3\":\"A012 Cantarelli\",\"ora4\":\"A026 Galante\",\"ora5\":\"A026 Galante\",\"ora6\":\"A041 De Nichilo\",\"ora7\":\"_IRC Fiorella\",\"ora8\":\"A026 Galante\",\"ora9\":\"\",\"ora10\":\"\",\"oreGiorno\":\"8\",\"nOre\":8,\"nOreProf\":8,\"laboratorio\":\"\",\"lab1\":\"W TTRG Inf\",\"lab2\":\"W TTRG Inf\",\"lab3\":\"\",\"lab4\":\"\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"\",\"lab10\":\"\",\"sostegno\":[\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"lezioni\":[]},\"giorno1\":{\"ora1\":\"A041 Costanza\",\"ora2\":\"A041 De Nichilo\",\"ora3\":\"A041 Di Benedetto con B016 Moccaldi\",\"ora4\":\"A041 Di Benedetto con B016 Moccaldi\",\"ora5\":\"AB24 Di Felice\",\"ora6\":\"\",\"ora7\":\"A041 Costanza con B016 Devito\",\"ora8\":\"A041 Costanza con B016 Devito\",\"ora9\":\"\",\"ora10\":\"\",\"oreGiorno\":\"8\",\"nOre\":7,\"nOreProf\":7,\"laboratorio\":\"\",\"lab1\":\"\",\"lab2\":\"\",\"lab3\":\"E Inf 110 (Caffè)\",\"lab4\":\"E Inf 110 (Caffè)\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"E Inf 215\",\"lab8\":\"E Inf 215\",\"lab9\":\"\",\"lab10\":\"\",\"sostegno\":[\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"lezioni\":[]},\"giorno2\":{\"ora1\":\"A012 Cantarelli\",\"ora2\":\"A012 Cantarelli\",\"ora3\":\"A041 Mucciolo\",\"ora4\":\"A041 Mucciolo\",\"ora5\":\"\",\"ora6\":\"A041 Costanza\",\"ora7\":\"A041 Di Benedetto\",\"ora8\":\"A041 De Nichilo con B016 Montuschi\",\"ora9\":\"\",\"ora10\":\"\",\"oreGiorno\":\"8\",\"nOre\":7,\"nOreProf\":7,\"laboratorio\":\"\",\"lab1\":\"\",\"lab2\":\"\",\"lab3\":\"\",\"lab4\":\"\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"E Inf 214\",\"lab9\":\"\",\"lab10\":\"\",\"sostegno\":[\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"lezioni\":[]},\"giorno3\":{\"ora1\":\"A041 De Nichilo con B016 Montuschi\",\"ora2\":\"A012 Cantarelli\",\"ora3\":\"A012 Cantarelli\",\"ora4\":\"\",\"ora5\":\"A041 Costanza con B016 Devito\",\"ora6\":\"A041 Costanza con B016 Devito\",\"ora7\":\"A048 Strazzullo\",\"ora8\":\"A048 Strazzullo\",\"ora9\":\"\",\"ora10\":\"\",\"oreGiorno\":\"8\",\"nOre\":7,\"nOreProf\":7,\"laboratorio\":\"\",\"lab1\":\"E Inf 214\",\"lab2\":\"\",\"lab3\":\"\",\"lab4\":\"\",\"lab5\":\"E Inf 215\",\"lab6\":\"E Inf 215\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"\",\"lab10\":\"\",\"sostegno\":[\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"lezioni\":[]},\"giorno4\":{\"ora1\":\"AB24 Di Felice\",\"ora2\":\"AB24 Di Felice\",\"ora3\":\"A012 Cantarelli\",\"ora4\":\"\",\"ora5\":\"\",\"ora6\":\"\",\"ora7\":\"\",\"ora8\":\"\",\"ora9\":\"\",\"ora10\":\"\",\"oreGiorno\":\"8\",\"nOre\":3,\"nOreProf\":3,\"laboratorio\":\"\",\"lab1\":\"\",\"lab2\":\"\",\"lab3\":\"\",\"lab4\":\"\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"\",\"lab10\":\"\",\"sostegno\":[\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"],\"lezioni\":[]}}";
+  buttonCarouselController = carousel_slider.CarouselSliderController();
+  textEditingController1 = TextEditingController();
 
-    print('numero ore : ' + (widget.oreList?.length).toString());
-    Map<String, dynamic> jsonData = jsonDecode(jsonString);
-
-    orario = OrarioSettimanale.fromJson(jsonData);
-    customHeight = (h!) + ((40 * h!) / 100)!;
+  print('numero ore : ' + (widget.oreList?.length).toString());
+  // Inizializzazione rimandata: `orario` verrà valorizzato da `getOrario` quando i dati reali sono disponibili
+  customHeight = (h!) + ((40 * h!) / 100);
 
 
     super.initState();
@@ -655,7 +654,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         getOrario(
                                             textEditingController1.text, prof,
                                             widget.oreList!.length);
-                                      }on Exception catch(_err){
+                                      } on Exception catch (err) {
+                                        debugPrint('getOrario error (prof): $err');
                                         stateOnlyText = ButtonState.fail;
                                       }
                                     }
@@ -681,7 +681,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                             getOrario(
                                                 textEditingController1.text, prof,
                                                 widget.oreList!.length);
-                                          }on Exception catch(_err){
+                                          } on Exception catch (err) {
+                                            debugPrint('getOrario error (classe): $err');
                                             stateOnlyText = ButtonState.fail;
                                           }
                                         }
@@ -730,7 +731,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
       )),
-      WeekPage(textEditingController1.text,orario, this.prof, buttonCarouselController, widget.oreList, this.customHeight, this.scrollController, widget.context),
+      // Mostra la pagina dell'orario solo quando `orario` è disponibile
+      orario != null
+          ? WeekPage(textEditingController1.text, orario!, this.prof, buttonCarouselController, widget.oreList, this.customHeight, this.scrollController, widget.context)
+          : Scaffold(
+              backgroundColor: Colors.white,
+              body: Center(
+                child: Text(
+                  'Seleziona una classe o un docente per caricare l\'orario',
+                  style: TextStyle(fontFamily: 'HindSiliguri', fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
       Favourites(widget.tabController,this.customHeight, widget.oreList,widget.context ),
       Contattaci(),
 
@@ -751,10 +764,10 @@ return Container(
                       children: <Widget>[
                         Visibility(
                             visible: !this.visible,
-                            child: CarouselSlider(items: carouselItems,
+                            child: carousel_slider.CarouselSlider(items: carouselItems,
                               carouselController: buttonCarouselController,
 
-                              options:CarouselOptions(
+                              options:carousel_slider.CarouselOptions(
                                 height: this.customHeight,
                                 viewportFraction: 1,
                                 autoPlayCurve: Curves.fastOutSlowIn,
@@ -877,6 +890,8 @@ return Container(
 
 
 
+
+
                   ],
                 )
             )
@@ -893,7 +908,7 @@ return Container(
   }
 
   void getListaProf() async {
-    List<String> profs = [];
+  // NOTE: Se servirà accumulare i docenti, reinserire una lista qui.
     try {
       // Effettua una richiesta HTTP per ottenere il contenuto del file Excel
 
@@ -909,7 +924,7 @@ return Container(
           print(table); // nome del foglio di lavoro
           print(excel.tables[table]!.maxColumns);
           print(excel.tables[table]!.maxRows);
-          for (var row in excel.tables[table]!.rows) {
+          for (var _ in excel.tables[table]!.rows) {
 
             // Itera su tutte le colonne della riga corrente
 
@@ -929,86 +944,56 @@ return Container(
       print('Error: $e');
     }
   }
-  void _readExcelFromUrl() async {
+  // Metodo di debug rimosso perché non utilizzato: _readExcelFromUrl()
+
+Future<void> getOrario(String target, bool prof, int ore) async {
+  print("cerco orario\n");
+  setState(() => stateOnlyText = ButtonState.loading);
+
+  final String baseUrl = "https://us-central1-easy-lesson.cloudfunctions.net/getOrario";
+  final String query = prof ? "prof=$target" : "classe=${Uri.encodeComponent(target)}";
+  final String url = "$baseUrl?$query&ore=$ore";
+
+  int retries = 3;
+  while (retries > 0) {
     try {
-      // Effettua una richiesta HTTP per ottenere il contenuto del file Excel
-      final response = await http.get(Uri.parse("https://www.isrosselliaprilia.edu.it/sites/default/files/orario_dal_15_gennaio.xlsx"));
+      final response = await http.get(Uri.parse(url)).timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        // Ottieni il contenuto del file Excel
-        var bytes = response.bodyBytes;
-        var excel = Excel.decodeBytes(bytes);
 
-        // Estrai i dati dall'excel
-        for (var table in excel.tables.keys) {
-          print(table); // nome del foglio di lavoro
-          print(excel.tables[table]!.maxColumns);
-          print(excel.tables[table]!.maxRows);
-          for (var row in excel.tables[table]!.rows) {
-            print((row.map((cell) => cell?.value.toString() ?? '').toList().toString()));
-          }
-        }
+        String res = response.body.toString().replaceAll(r'\"', '"');
 
-        // Aggiorna lo stato con i dati dell'excel
-        setState(() {});
 
+
+        Map<String, dynamic> jsonData = jsonDecode(res.substring(1, res.length - 1));
+
+        setState(() {
+          orario = OrarioSettimanale.fromJson(jsonData);
+          stateOnlyText = ButtonState.idle;
+          loading = false;
+        });
+
+        buttonCarouselController.nextPage();
+        return;
       } else {
-        // Gestisci gli errori di richiesta HTTP
-        print('Failed to load Excel file. Status code: ${response.statusCode}');
+        throw Exception('Errore nel caricamento dell\'orario: ${response.statusCode}');
       }
+    } on TimeoutException catch (_) {
+      print('Timeout durante il recupero dell\'orario. Tentativi rimanenti: ${retries - 1}');
     } catch (e) {
-      // Gestisci altri tipi di errori
-      print('Error: $e');
+      print('Errore durante il recupero dell\'orario: $e');
+      break; // Esci dal ciclo per errori non di timeout
     }
+
+    retries--;
+    await Future.delayed(Duration(seconds: 2)); // Breve pausa prima del retry
   }
 
-  void getOrario(String target, bool prof, int ore) async{
-    print("cerco orario\n");
-    if(prof){
-      http.Response response = await http.get(Uri.parse("https://us-central1-easy-lesson.cloudfunctions.net/getOrario?prof=$target&ore=$ore"), headers: {
-        'Content-Type': 'application/json',
-        'Accept': '*/*',
-      });
-     String res = response.body.toString().replaceAll(r'\"', '"');
-
-
-
-      Map<String, dynamic> jsonData = jsonDecode(res.substring(1, res.length - 1));
-
-      setState(() {
-        this.orario = OrarioSettimanale.fromJson(jsonData);
-        stateOnlyText = ButtonState.idle;
-        loading = false;
-
-      });
-      await buttonCarouselController.nextPage();
-
-    }else{
-
-      http.Response response = await http.get(Uri.parse("https://us-central1-easy-lesson.cloudfunctions.net/getOrario?classe=$target&ore=$ore"), headers: {
-        'Content-Type': 'application/json',
-        'Accept': '*/*',
-      });
-      String res = response.body.toString().replaceAll(r'\"', '"');
-
-
-      Map<String, dynamic> jsonData = jsonDecode(res.substring(1, res.length - 1));
-
-      setState(() {
-        print(jsonData.toString());
-        this.orario = OrarioSettimanale.fromJson(jsonData);
-        stateOnlyText = ButtonState.idle;
-        loading = false;
-
-      });
-
-
-
-      await buttonCarouselController.nextPage();
-
-
-    }
-  }
+  setState(() {
+    stateOnlyText = ButtonState.fail;
+    loading = false;
+  });
+}
 
   Future<List<String>> fetchXMLAndConvertToList() async {
     String url = 'https://www.isrosselliaprilia.edu.it/sites/default/files/ore_0.xml';

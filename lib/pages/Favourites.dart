@@ -1,30 +1,20 @@
 
-import 'package:path_provider/path_provider.dart' as path_provider;
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart' as carousel_slider;
+import 'package:flutter/material.dart' hide CarouselController;
+//
 import 'package:Easy_Lesson_web/utils/GiornoDetails.dart';
-import 'package:Easy_Lesson_web/utils/MeasureSizeRenderObject.dart';
 import 'package:Easy_Lesson_web/utils/Ora.dart';
 import 'package:Easy_Lesson_web/utils/OrarioSettimanale.dart';
-import 'package:Easy_Lesson_web/utils/colors.dart';
 import 'package:Easy_Lesson_web/utils/constants.dart';
-import 'package:Easy_Lesson_web/utils/my_flutter_app_icons.dart';
-import 'package:Easy_Lesson_web/utils/responsive_widget.dart';
 import 'package:Easy_Lesson_web/widgets/DayPage.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:Easy_Lesson_web/widgets/ListPage.dart';
+//
 import 'package:Easy_Lesson_web/widgets/WeekPage.dart';
-import 'package:Easy_Lesson_web/widgets/gradient_button.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
-import 'package:loading_indicator/loading_indicator.dart';
 
 class Favourites extends StatefulWidget {
   final TabController tabController;
@@ -47,10 +37,10 @@ class _FavouritesState extends State<Favourites> {
   late String giorno = "";
   late GiornoDetails details;
   late String name = "";
-  late CarouselController carouselController;
+  late carousel_slider.CarouselSliderController carouselController;
   late IconData favIcon = Icons.favorite_border;
   late ScrollController scrollController = ScrollController();
-  late OrarioSettimanale orario;
+  OrarioSettimanale? orario;
   late bool prof = false;
   late final box;
 
@@ -60,9 +50,19 @@ class _FavouritesState extends State<Favourites> {
 
     List<Widget> carouselItems = [
       _buildBody(),
-      WeekPage(name,orario, prof, carouselController, widget.oreList, widget.customHeight, this.scrollController, widget.context),
-
-
+      // Mostra la pagina dell'orario solo quando disponibile
+      orario != null
+          ? WeekPage(name, orario!, prof, carouselController, widget.oreList, widget.customHeight, this.scrollController, widget.context)
+          : Scaffold(
+              backgroundColor: Colors.white,
+              body: Center(
+                child: Text(
+                  'Seleziona un preferito per caricare l\'orario',
+                  style: TextStyle(fontFamily: 'HindSiliguri', fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
     ];
 
 
@@ -81,9 +81,9 @@ class _FavouritesState extends State<Favourites> {
             child:
             Column(
               children: [
-                CarouselSlider(items: carouselItems,
+                carousel_slider.CarouselSlider(items: carouselItems,
                   carouselController: carouselController,
-                  options:CarouselOptions(
+                  options:carousel_slider.CarouselOptions(
                     viewportFraction: 1,
                     height: widget.customHeight,
                     autoPlayCurve: Curves.fastOutSlowIn,
@@ -178,14 +178,10 @@ class _FavouritesState extends State<Favourites> {
 
     initStorage();
 
-    carouselController = CarouselController();
+    carouselController = carousel_slider.CarouselSliderController();
     print("altezza in pref :" +  widget.customHeight.toString());
-    String jsonString = "{\"giorno0\":{\"ora1\":\"3B Inf\",\"ora2\":\"3B Inf\",\"ora3\":\"4B Inf\",\"ora4\":\"\",\"ora5\":\"\",\"ora6\":\"\",\"ora7\":\"\",\"ora8\":\"\",\"ora9\":\"\",\"ora10\":\"\",\"oreGiorno\":\"8\",\"nOre\":3,\"nOreProf\":3,\"laboratorio\":\"\",\"lab1\":\"\",\"lab2\":\"\",\"lab3\":\"\",\"lab4\":\"\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"\",\"lab10\":\"\",\"lezioni\":[]},\"giorno1\":{\"ora1\":\"4B Inf\",\"ora2\":\"\",\"ora3\":\"3B Inf - compresenza\",\"ora4\":\"3B Inf - compresenza\",\"ora5\":\"5B Inf\",\"ora6\":\"\",\"ora7\":\"\",\"ora8\":\"\",\"ora9\":\"4B Inf\",\"ora10\":\"5B Inf\",\"oreGiorno\":\"8\",\"nOre\":6,\"nOreProf\":6,\"laboratorio\":\"\",\"lab1\":\"\",\"lab2\":\"\",\"lab3\":\"E Inf 215\",\"lab4\":\"E Inf 215\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"\",\"lab10\":\"\",\"lezioni\":[]},\"giorno2\":{\"ora1\":\"4B Inf\",\"ora2\":\"5B Inf\",\"ora3\":\"\",\"ora4\":\"\",\"ora5\":\"\",\"ora6\":\"\",\"ora7\":\"\",\"ora8\":\"\",\"ora9\":\"5B Inf - compresenza\",\"ora10\":\"5B Inf - compresenza\",\"oreGiorno\":\"8\",\"nOre\":4,\"nOreProf\":4,\"laboratorio\":\"\",\"lab1\":\"\",\"lab2\":\"\",\"lab3\":\"\",\"lab4\":\"\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"E Inf 215\",\"lab10\":\"E Inf 215\",\"lezioni\":[]},\"giorno3\":{\"ora1\":\"5B Inf - compresenza\",\"ora2\":\"5B Inf - compresenza\",\"ora3\":\"3B Inf\",\"ora4\":\"4B Inf - compresenza\",\"ora5\":\"\",\"ora6\":\"\",\"ora7\":\"\",\"ora8\":\"\",\"ora9\":\"5B Inf - compresenza\",\"ora10\":\"5B Inf - compresenza\",\"oreGiorno\":\"8\",\"nOre\":6,\"nOreProf\":6,\"laboratorio\":\"\",\"lab1\":\"E Inf 215\",\"lab2\":\"E Inf 215\",\"lab3\":\"\",\"lab4\":\"E Inf 215\",\"lab5\":\"\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"E Inf 215\",\"lab10\":\"E Inf 215\",\"lezioni\":[]},\"giorno4\":{\"ora1\":\"5B Inf - compresenza\",\"ora2\":\"5B Inf - compresenza\",\"ora3\":\"3B Inf\",\"ora4\":\"4B Inf - compresenza\",\"ora5\":\"4B Inf - compresenza\",\"ora6\":\"\",\"ora7\":\"\",\"ora8\":\"\",\"ora9\":\"\",\"ora10\":\"\",\"oreGiorno\":\"8\",\"nOre\":5,\"nOreProf\":5,\"laboratorio\":\"\",\"lab1\":\"E Inf 215\",\"lab2\":\"E Inf 215\",\"lab3\":\"\",\"lab4\":\"E Inf 215\",\"lab5\":\"E Inf 215\",\"lab6\":\"\",\"lab7\":\"\",\"lab8\":\"\",\"lab9\":\"\",\"lab10\":\"\",\"lezioni\":[]}}";
-
+    // `orario` verrà caricato quando selezioni un preferito o tramite storage/API
     print('numero ore : ' + (widget.oreList?.length).toString());
-    Map<String, dynamic> jsonData = jsonDecode(jsonString);
-
-    orario = OrarioSettimanale.fromJson(jsonData);
 
   }
 
@@ -241,28 +237,7 @@ class _FavouritesState extends State<Favourites> {
 
 
 
-  Widget _getListViewWidget2() {
-    // We want the ListView to have the flexibility to expand to fill the
-    // available space in the vertical axis
-    return new Flexible(
-        child: ListView.builder(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(20.0),
-            itemCount: array.length,
-            itemBuilder: (BuildContext context, int index){
-              return Container(
-                height: 50,
-                margin: EdgeInsets.all(2),
-                color: Colors.white,
-                child: Center(
-                    child: Text('${array[index]} (${array[index]})',
-                      style: TextStyle(fontSize: 18, color: Colors.blue),
-                    )
-                ),
-              );
-            }
-        ));
-  }
+  // _getListViewWidget2 non utilizzato: rimosso
 
   Widget _getListViewWidget() {
     // We want the ListView to have the flexibility to expand to fill the
@@ -283,7 +258,6 @@ class _FavouritesState extends State<Favourites> {
           final MaterialColor color = _colors[index % _colors.length];
 
 
-          int numero;
           return GestureDetector(
             child: Center(
               child: _getListItemWidget(currency, color, array[index].oreTot),
@@ -320,9 +294,9 @@ class _FavouritesState extends State<Favourites> {
       this.prof = prof;
     });
     try {
-      getOrario(currency, prof,
-          widget.oreList!.length);
-    }on Exception catch (err){
+      final ore = widget.oreList?.length ?? 8; // fallback di sicurezza
+      getOrario(currency, prof, ore);
+    } on Exception {
       visibility = false;
     }
 

@@ -17,7 +17,8 @@ import 'package:Easy_Lesson_web/widgets/bottom_bar.dart';
 import 'package:Easy_Lesson_web/widgets/custom_tab.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart' as carousel_slider;
+import 'package:flutter/material.dart' hide CarouselController;
 import 'package:Easy_Lesson_web/widgets/custom_tab_bar.dart';
 import 'package:Easy_Lesson_web/utils/my_flutter_app_icons.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -56,7 +57,7 @@ class _NavBar2 extends State<NavBar2>
   late double bottomPadding;
   late double customHeight;
   late double sidePadding;
-  late CarouselController buttonCarouselController;
+  late carousel_slider.CarouselSliderController buttonCarouselController;
   final ScrollController _scrollController = ScrollController();
 
   static final Config config = Config(
@@ -77,7 +78,7 @@ class _NavBar2 extends State<NavBar2>
     ));
     tabController = TabController(length: 4, vsync: this);
     itemScrollController = ItemScrollController();
-    buttonCarouselController = CarouselController();
+    buttonCarouselController = carousel_slider.CarouselSliderController();
 
 
   }
@@ -136,7 +137,7 @@ class _NavBar2 extends State<NavBar2>
                 ),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
-                    NavBar2._launchURL("http://danieledalonzo.hostinggratis.it/EasyLesson_PrivacyPolicy.html");
+                    NavBar2._launchURL("https://easy-lesson.web.app/EasyLesson_PrivacyPolicy.html");
                   }),
 
 
@@ -219,8 +220,9 @@ class _NavBar2 extends State<NavBar2>
             tabController: tabController,
             child: TabBarView(
               controller: tabController,
-              children: contentViews.map((e) => e.content).toList(),
+              children: contentViews?.map((e) => e.content).toList() ?? [Container()], // Se è null, usa una lista con un Container vuoto
             ),
+
           ),
         )),
 
@@ -293,9 +295,9 @@ class _NavBar2 extends State<NavBar2>
             child: Center(
                   child: Column(
                     children: [
-                      CarouselSlider(items: carouselItems,
+                      carousel_slider.CarouselSlider(items: carouselItems,
                         carouselController: buttonCarouselController,
-                        options:CarouselOptions(
+                        options:carousel_slider.CarouselOptions(
                           viewportFraction: 1,
                           height: customHeight,
                           autoPlayCurve: Curves.fastOutSlowIn,

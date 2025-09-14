@@ -5,11 +5,11 @@ class ThemeSelector{
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     if(screenWidth > 950 && screenHeight > 550){
-      return Theme.of(context).textTheme.headline1;
+      return Theme.of(context).textTheme.displayLarge;
     } else if (screenWidth > 650 && screenHeight > 550){
-      return Theme.of(context).textTheme.headline2;
+      return Theme.of(context).textTheme.displayMedium;
     } else {
-      return Theme.of(context).textTheme.headline3;
+      return Theme.of(context).textTheme.displaySmall;
     }
   }
 
@@ -17,20 +17,20 @@ class ThemeSelector{
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     if(screenWidth > 715 && screenHeight > 350){
-      return Theme.of(context).textTheme.subtitle1;
+      return Theme.of(context).textTheme.titleMedium;
     } else {
-      return Theme.of(context).textTheme.subtitle2;
+      return Theme.of(context).textTheme.titleSmall;
     }
   }
   static TextStyle? selectBodyText(BuildContext context){
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     if(screenWidth > 1050 && screenHeight > 850){
-      return Theme.of(context).textTheme.bodyText1;
+      return Theme.of(context).textTheme.bodyLarge;
     } else if(screenWidth > 850 && screenHeight > 700){
-      return Theme.of(context).textTheme.bodyText2;
+      return Theme.of(context).textTheme.bodyMedium;
     } else {
-      return Theme.of(context).textTheme.caption;
+      return Theme.of(context).textTheme.bodySmall;
     }
   }
 

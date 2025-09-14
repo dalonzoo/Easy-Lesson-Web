@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:Easy_Lesson_web/utils/DataFetcher.dart';
 import 'package:aad_oauth/aad_oauth.dart';
 import 'package:aad_oauth/model/config.dart';
+import 'package:dio/dio.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -50,42 +53,36 @@ class _HomePageState extends State<Home> {
   final AadOAuth oauth = AadOAuth(config);
 
   Future<void> _fetchData() async {
-
-    try{
-      await login(true);
-    }catch(error){
-      print('errore auth');
-    }
-    // Fetch professors data
     try {
-      profs = await fetchProfs('https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=profs');
-    } catch (error) {
-      print('Error fetching professors: $error');
-      profs = [];
-    }
+      login(true);
+      
+      final dio = Dio(BaseOptions(
+        baseUrl: "your base url",
+        receiveDataWhenStatusError: true,
+        connectTimeout: Duration(seconds: 30),
+        receiveTimeout: Duration(seconds: 30)
+      ));
 
-    try {
-      studs = await fetchProfs('https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=studs');
-    } catch (error) {
-      print('Error fetching professors: $error');
-      studs = [];
-    }
+      final futures = await Future.wait([
+        fetchProfs('https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=profs', dio),
+        fetchProfs('https://us-central1-easy-lesson.cloudfunctions.net/getListe?lista=studs', dio),
+        fetchData(http.Client()),
+      ]);
 
-    // Fetch schedule data
-    try {
-      _schedule = await fetchData();
-    } catch (error) {
-      print('Error fetching schedule: $error');
-      _schedule = [];
-    }
+      profs = futures[0] as List<String>;
+      studs = futures[1] as List<String>;
+      _schedule = futures[2] as List<Ora>;
 
-    // Update the displayed widget based on data availability
-    if (profs.isNotEmpty && studs.isNotEmpty && _schedule.isNotEmpty) {
-      setState(() {
-        _currentWidget = NavBar2(_schedule, studs, profs, context);
-      });
-    }else{
-      await fetchData();
+      // Update the displayed widget based on data availability
+      if (profs.isNotEmpty && studs.isNotEmpty && _schedule.isNotEmpty) {
+        setState(() {
+          _currentWidget = NavBar2(_schedule, studs, profs, context);
+        });
+      }else{
+        await _fetchData();
+      }
+    } catch (error) {
+      print('Errore nel recupero dei dati: $error');
     }
   }
 
@@ -93,7 +90,8 @@ class _HomePageState extends State<Home> {
   void initState() {
     super.initState();
 
-    hasCachedAccountInformation();
+    //hasCachedAccountInformation();
+    //DataFetcher().fetchClassi("https://divine-cell-21ef.danieledalonzon03.workers.dev/?https://www.isrosselliaprilia.edu.it/sites/default/files/orario_dal_18_febbraio.xlsx");
     _fetchData(); // Fetch data on page initialization
   }
 
@@ -108,6 +106,7 @@ class _HomePageState extends State<Home> {
     );
   }
 
+/*
   Future<StatefulWidget> hasCachedAccountInformation() async {
     var hasCachedAccountInformation = await oauth.hasCachedAccountInformation;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -179,19 +178,24 @@ class _HomePageState extends State<Home> {
             )));
 
   }
-
+*/
   Future<http.Response> fetchAlbum() async{
     var uri = Uri.https('us-central1-easy-lesson.cloudfunctions.net', 'getProfs');
     var response = await http.Client().get(uri);
     return response;
   }
-  Future<List<String>> fetchProfs(String url) async {
-    http.Response response = await http.get(Uri.parse(url), headers: {
-      'Content-Type': 'application/json',
-      'Accept': '*/*'
-    });
-
-    return await jsonDecode(response.body).cast<String>();
+  Future<List<String>> fetchProfs(String url, Dio dio) async {
+    try {
+      final response = await dio.get(url, options: Options(responseType: ResponseType.json));
+      if (response.statusCode == 200) {
+        return List<String>.from(response.data);
+      } else {
+        throw Exception('Errore nel recupero dei dati: Codice stato ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Errore in fetchProfs: $e");
+      rethrow;
+    }
   }
   List<String> parsePhotos(String responseBody) {
     final data = json.decode(responseBody);
@@ -200,39 +204,34 @@ class _HomePageState extends State<Home> {
     return data;
   }
 
-  Future<bool> login(bool redirect) async{
+  void login(bool redirect) async{
     config.webUseRedirect = redirect;
     final result = await oauth.login();
 
-    print(result.toString());
-    var accessToken = await oauth.getAccessToken();
 
-    if (accessToken != null) {
-
-      print("lgin :" + accessToken);
-      return true;
-    }else{
-      print("not logged");
-      return false;
-    }
   }
 
-  Future<List<Ora>> fetchData() async {
+  Future<List<Ora>> fetchData(http.Client client) async {
     try {
-      final response = await http.get(Uri.parse(
+      final response = await client.get(Uri.parse(
           'https://us-central1-easy-lesson.cloudfunctions.net/getXmlOre'));
 
       if (response.statusCode == 200) {
-        final xmlDoc = xml.XmlDocument.parse(response.body);
-        return await xmlDoc.findAllElements('ora')
-            .map((element) => Ora(element.text))
-            .toList();
+        return compute(parseXml, response.body);
       } else {
-        return [];
+        throw Exception('Errore nel recupero dei dati XML');
       }
-    }on Exception catch(_err){
+    } catch (e) {
+      print("Errore in fetchData: $e");
       return [];
     }
+  }
+
+  List<Ora> parseXml(String xmlString) {
+    final xmlDoc = xml.XmlDocument.parse(xmlString);
+    return xmlDoc.findAllElements('ora')
+        .map((element) => Ora(element.text))
+        .toList();
   }
 
 }
