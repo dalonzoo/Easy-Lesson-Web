@@ -31,6 +31,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+android/local.properties
 
 # Symbolication related
 app.*.symbols
@@ -42,3 +43,48 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ------------------------------
+# Sensitive & generated files (added)
+# ------------------------------
+
+# Firebase configuration files (treat as sensitive; avoid committing)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+**/firebase_app_id_file.json
+
+# FlutterFire generated options (contains API keys). If you intentionally commit it, remove this line.
+lib/firebase_options.dart
+
+# Android signing keys and properties
+android/app/*.keystore
+android/app/*.jks
+android/key.properties
+**/*.keystore
+**/*.jks
+**/key.properties
+
+# Common secrets and environment files
+.env
+.env.*
+.secret
+secrets.*
+serviceAccount*.json
+credentials*.json
+*.pem
+*.p12
+*.crt
+*.key
+
+# Additional Android/iOS generated artifacts
+android/.gradle/
+android/**/build/
+android/captures/
+ios/Flutter/ephemeral/
+ios/.generated/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+macos/Flutter/ephemeral/
+**/*.xcuserdatad
+**/*.xcscmblueprint
+**/*.xcuserstate
