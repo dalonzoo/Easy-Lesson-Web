@@ -123,12 +123,8 @@ class _DayPageState extends State<DayPage> {
   Widget _getListViewWidget() {
     // We want the ListView to have the flexibility to expand to fill the
     // available space in the vertical axis
-     int nOre = 0;
-  if (widget.prof) {
-    nOre = int.parse(widget.details.oreGiorno);
-  } else {
-    nOre = (widget.details.nOre);
-  }
+    int nOre = 0;
+    nOre = widget.details.oreGiorno;
 
   return Expanded(
     child: ListView.builder(

@@ -9,7 +9,7 @@ class GiornoDetails {
   String ora8;
   String ora9;
   String ora10;
-  String oreGiorno;
+  int oreGiorno;
   int nOre;
   int nOreProf;
   String laboratorio;
@@ -75,7 +75,7 @@ class GiornoDetails {
       ora8: json['ora8']?.toString() ?? '',
       ora9: json['ora9']?.toString() ?? '',
       ora10: json['ora10']?.toString() ?? '',
-      oreGiorno: json['oreGiorno']?.toString() ?? '0',
+      oreGiorno: _asInt(json['oreGiorno']),
       nOre: _asInt(json['nOre']),
       nOreProf: _asInt(json['nOreProf']),
       laboratorio: json['laboratorio']?.toString() ?? '',

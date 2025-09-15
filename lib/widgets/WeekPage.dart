@@ -113,7 +113,7 @@ class _WeekPageState extends State<WeekPage> {
            widget.orarioSettimanale.giorni["giorno" + i.toString()]!.nOreProf;
      }else{
        oreTot +=
-           widget.orarioSettimanale.giorni["giorno" + i.toString()]!.nOre;
+           widget.orarioSettimanale.giorni["giorno" + i.toString()]!.oreGiorno;
      }
      }
   }
@@ -279,7 +279,7 @@ class _WeekPageState extends State<WeekPage> {
     if(prof){
   return widget.orarioSettimanale.giorni["giorno$index"]!.nOreProf;
     }else{
-  return widget.orarioSettimanale.giorni["giorno$index"]!.nOre;
+  return widget.orarioSettimanale.giorni["giorno$index"]!.oreGiorno;
     }
   }
 
